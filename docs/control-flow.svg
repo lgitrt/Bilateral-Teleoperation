@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="580" viewBox="0 0 1200 580" role="img" aria-labelledby="title description">
   <title id="title">Bilateral teleoperation: delayed position and force channels</title>
-  <desc id="description">Master and slave local controllers exchange motion, force and energy information through a delayed channel with passivity observers and controllers. The diagram describes the research architecture, not a publicly available hardware executable.</desc>
+  <desc id="description">Master and slave local controllers exchange motion, force and energy information through a delayed channel with passivity observers and controllers. Local adaptive inverse dynamics shapes robot tracking, while channel passivity adds dissipation when the energy balance becomes negative.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0 0L10 5L0 10Z" fill="#7dd3fc"/>
@@ -49,8 +49,8 @@
       <text x="350" y="386">+ energy balance</text>
     </g>
     <rect x="40" y="425" width="1120" height="110" rx="12" fill="#132239"/>
-    <text x="65" y="459" font-size="17">Public reproduction: MATLAB / Simulink models, symbolic dynamics and offline C++ utility tests.</text>
-    <text x="65" y="489" font-size="17" fill="#94a3b8">Historical device code and third-party sources are omitted. Hardware videos are linked from the portfolio.</text>
-    <text x="65" y="516" font-size="17" fill="#94a3b8">Simulation results and software checks are not proof of hardware safety or stability under arbitrary delays.</text>
+    <text x="65" y="459" font-size="17">Local model-based control: inertia, Coriolis and gravity compensation with adaptive tracking feedback.</text>
+    <text x="65" y="489" font-size="17" fill="#94a3b8">Channel passivity: integrate force x velocity and apply damping when the available energy is negative.</text>
+    <text x="65" y="516" font-size="17" fill="#94a3b8">MATLAB / Simulink: compare position-position, position-force and four-channel bilateral interaction.</text>
   </g>
 </svg>

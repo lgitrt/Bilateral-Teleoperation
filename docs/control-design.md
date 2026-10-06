@@ -1,86 +1,99 @@
-# Control design and reproduction boundaries
+# MATLAB simulation and control derivation
 
-## Delayed bilateral control
+## Bilateral interaction
 
-The experiment couples operator motion at a master device to a remote slave and
-returns contact information to the operator. Position tracking alone does not
-capture the interaction objective: both motion and force matter. Communication
-delay introduces phase lag and can make an otherwise well-behaved coupled loop
-generate energy.
+The master and slave form a coupled system: operator motion is sent to the
+slave, and the environment interaction is returned to the master. The
+position-position, position-force and four-channel Simulink models explore
+different ways to exchange that information.
 
-The published Simulink models explore three architectures:
+The local robot loop and the communication channel have different roles.
+Local feedback and inverse dynamics control the robot's motion; channel
+passivity monitors the energy exchanged through delayed force/motion
+signals. The animation shows the four-channel model's scalar master/slave
+positions together with its controller-force histories.
 
-| Model | Scope |
-|---|---|
-| `PP_TDPA_TD.slx` | Position-position coupling with time-domain passivity elements |
-| `PFmsr_TDPA_TD.slx` | Position-force coupling with measured-force feedback |
-| `FourCh_TDPA_TD.slx` | Four-channel position/force exchange and channel energy accounting |
+## Link kinematics and inertia
 
-The saved model configurations are retained. `run_model` only overrides duration
-and enables output logging; it does not retune gains, replace delays, or suppress
-algebraic-loop diagnostics. Inspect each model's Transport Delay and PC switch
-blocks before interpreting an experiment. The PP model contains zero-delay
-blocks; not every saved model is a nonzero-delay experiment.
+For each body, homogeneous transforms locate its centre of mass and rotate
+its inertia tensor into the world frame. Linear and angular Jacobians give
+the velocities associated with the joint vector $q$:
 
-## Energy accounting
+$$v_i=J_{v,i}(q)\dot q,\qquad
+\omega_i=J_{\omega,i}(q)\dot q.$$
 
-For a translational port, instantaneous power is
+The kinetic energy is
 
-$$p[k] = f[k]^\mathsf{T} v[k], \qquad E[k] = E[k-1] + \Delta t\,p[k].$$
+$$\mathcal T=\frac12\sum_i
+\left(m_i v_i^\mathsf{T}v_i+
+\omega_i^\mathsf{T}R_iI_iR_i^\mathsf{T}\omega_i\right)
+=\frac12\dot q^\mathsf{T}M(q)\dot q.$$
 
-Forces must be in N, velocities in m/s and energy in J. A passivity observer
-compares delayed incoming energy with outgoing energy and energy dissipated by
-the controller. For a scalar effort-correction port with negative available
-energy $W[k]$, an illustrative damping coefficient is
+This leads to the summed inertia matrix documented in the README.
+The velocity coupling follows from the Christoffel coefficients:
 
-$$\alpha[k] = \frac{-W[k]}{\Delta t\,v[k]^2}.$$
+$$c_{ijk}=\frac12\left(
+\frac{\partial M_{ij}}{\partial q_k}+
+\frac{\partial M_{ik}}{\partial q_j}-
+\frac{\partial M_{jk}}{\partial q_i}\right),\qquad
+C_{ij}=\sum_k c_{ijk}\dot q_k.$$
 
-The correction is applied only for an energy deficit and non-negligible
-velocity. The new native utility tests exercise this scalar calculation and
-explicit sample-delay semantics. They **do not** execute the original hardware
-controller or establish closed-loop stability for the Simulink models.
+The source's gravity term is the derivative of its signed gravity expression
+$P(q)=\sum_i m_i g^\mathsf{T}p_{c,i}(q)$:
 
-## Three-joint robot model
+$$G(q)=\frac{\partial P}{\partial q},\qquad
+M(q)\ddot q+C(q,\dot q)\dot q+G(q)=\tau.$$
 
-The symbolic derivation retains the original CAD-derived masses, link geometry,
-and inertia tensors:
+The gravity vector in this derivation is $g=[0,0,-9810]^\mathsf{T}$
+in mm/s^2. The numerical controller uses the same signed model convention.
 
-$$M(q)\ddot q + C(q,\dot q)\dot q + G(q) = \tau.$$
+## End-effector motion
 
-`Dynamics.m` also derives end-effector position, the Jacobian $J(q)$, and
-$\dot J(q,\dot q)$. The source uses mm, kg, kg·mm², and mm/s². Generalized
-torque in this convention converts to N·m by multiplying by $10^{-6}$.
-Joint angles are radians. `inverse_kinematics` accepts Cartesian positions in
-**metres**; tests convert the forward-model result accordingly.
+The last link's forward kinematics supply $x=h(q)$. Differentiation yields
 
-`build_robot_model` supplies explicit vector-argument numerical functions,
-avoiding the old scripts' dependency on `matlabFunction`'s inferred scalar
-argument ordering. Christoffel derivatives use the actual coordinate vector
-rather than hard-coded symbol names; tests check the $\dot M - 2C$
-skew-symmetry identity and the Jacobian time derivative.
-The standalone tracking example uses
+$$J(q)=\frac{\partial h}{\partial q},\qquad
+\dot J(q,\dot q)=\sum_i\frac{\partial J}{\partial q_i}\dot q_i.$$
 
-$$\tau = M(q)\left(\ddot q_d + K_p(q_d-q)+K_d(\dot q_d-\dot q)\right)
-       + C(q,\dot q)\dot q+G(q).$$
+For a nonsingular three-joint position Jacobian, a desired Cartesian
+acceleration is converted to a joint acceleration by
 
-The plant and controller use the same model, so its tiny tracking error is an
-**ideal-model consistency check**, not evidence of robustness to uncertainty,
-delay, contact, sensor noise, or real hardware. Numerical integration uses a
-linear solve, not an explicit matrix inverse.
+$$a_x=\ddot x_d+K_{p,x}(x_d-x)+K_{d,x}(\dot x_d-\dot x),$$
 
-## Known limitations
+$$J(q)a_q=a_x-\dot J(q,\dot q)\dot q.$$
 
-- PP and PF reference configurations report algebraic-loop warnings in R2024b.
-  PF also has unused observer output ports. These warnings are surfaced rather
-  than hidden or "fixed" by adding an unvalidated artificial delay.
-- The reproduced four-channel response has substantial early force transients.
-  Its saved tuning is retained; finite output is not evidence of a well-tuned
-  physical force loop.
-- The symbolic model is the historical derivation, not a newly identified
-  hardware model. The tests check sampled mass-matrix positivity and symmetry,
-  the position Jacobian, IK consistency and ideal tracking.
-- Adaptive inverse-dynamics, Slotine-Li, impedance and sliding-mode experiments
-  are historical project context; the public quick-start does not reproduce
-  every hardware controller or claim that the native tests implement them.
-- Original lab host code, device firmware templates, vendor SDKs, papers, CAD,
-  raw recordings, and historical device logs are not redistributed.
+The $\dot J\dot q$ term matters because the Jacobian changes as the robot
+moves. Inverse dynamics then converts $a_q$ into torque. Near a kinematic
+singularity, the Cartesian-to-joint mapping becomes ill-conditioned.
+
+## Joint-space simulation
+
+The tracking example integrates the state $z=[q^\mathsf{T},
+\dot q^\mathsf{T}]^\mathsf{T}$ using
+
+$$\dot z=
+\begin{bmatrix}
+\dot q\\
+M(q)^{-1}\left(\tau-C(q,\dot q)\dot q-G(q)\right)
+\end{bmatrix}.$$
+
+In the implementation, the acceleration is evaluated by solving the linear
+system with MATLAB's backslash operator. The controller supplies reference
+acceleration plus proportional/derivative error feedback before applying
+inertia, Coriolis and gravity compensation.
+
+This example uses the same model for the plant and compensation, making it
+an ideal-model illustration. Adaptive control for uncertain parameters and
+the hardware interaction loop are explained in
+[Hardware controller design](hardware.md).
+
+## Energy and units
+
+At a force/velocity port, power is $p=f^\mathsf{T}v$. Integrating power
+over the sample interval gives energy in joules when force is in N and
+velocity in m/s. The channel observer tracks energy balance; its controller
+adds damping when the available balance is negative.
+
+The symbolic robot derivation uses mm, kg, kg mm^2 and mm/s^2.
+Joint angles are radians, and generalized torque converts to N m by
+$10^{-6}$. Cartesian inputs to inverse kinematics are in metres, so
+positions from the symbolic forward model are divided by $1000$ first.
