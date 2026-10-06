@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="580" viewBox="0 0 1200 580" role="img" aria-labelledby="title description">
+  <title id="title">Bilateral teleoperation: delayed position and force channels</title>
+  <desc id="description">Master and slave local controllers exchange motion, force and energy information through a delayed channel with passivity observers and controllers. The diagram describes the research architecture, not a publicly available hardware executable.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#7dd3fc"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="580" rx="18" fill="#0b1220"/>
+  <g font-family="Arial, sans-serif" fill="#e2e8f0">
+    <text x="40" y="48" font-size="25" font-weight="700">Bilateral teleoperation under communication delay</text>
+    <text x="40" y="78" font-size="16" fill="#94a3b8">Research architecture | position + force exchange | time-domain passivity control</text>
+    <g stroke="#38bdf8" stroke-width="2" fill="#132239">
+      <rect x="40" y="155" width="230" height="180" rx="12"/>
+      <rect x="430" y="155" width="340" height="180" rx="12"/>
+      <rect x="930" y="155" width="230" height="180" rx="12"/>
+    </g>
+    <g text-anchor="middle">
+      <text x="155" y="190" font-size="21" font-weight="700">Master side</text>
+      <text x="155" y="223" font-size="17">Operator + haptic device</text>
+      <text x="155" y="252" font-size="17">Motion / interaction sensing</text>
+      <text x="155" y="281" font-size="17">Local position / force control</text>
+      <text x="155" y="314" font-size="15" fill="#f5a524">Feedback force to operator</text>
+      <text x="600" y="190" font-size="21" font-weight="700">Delayed communication</text>
+      <text x="600" y="223" font-size="17">Forward and return channels</text>
+      <text x="600" y="252" font-size="17">Passivity observer: energy accounting</text>
+      <text x="600" y="281" font-size="17">Passivity controller: dissipation</text>
+      <text x="600" y="314" font-size="15" fill="#f5a524">Four-channel reference model</text>
+      <text x="1045" y="190" font-size="21" font-weight="700">Slave side</text>
+      <text x="1045" y="223" font-size="17">Remote robot + environment</text>
+      <text x="1045" y="252" font-size="17">Local position / force control</text>
+      <text x="1045" y="281" font-size="17">Motion / contact sensing</text>
+      <text x="1045" y="314" font-size="15" fill="#f5a524">Actuator commands</text>
+    </g>
+    <g fill="none" stroke="#7dd3fc" stroke-width="2.5" marker-end="url(#arrow)">
+      <path d="M270 210H430"/>
+      <path d="M770 210H930"/>
+      <path d="M930 290H770"/>
+      <path d="M430 290H270"/>
+    </g>
+    <g text-anchor="middle" font-size="15">
+      <text x="350" y="170">Master motion</text>
+      <text x="350" y="190">+ human force</text>
+      <text x="850" y="170">Delayed motion</text>
+      <text x="850" y="190">+ force references</text>
+      <text x="850" y="365">Slave motion</text>
+      <text x="850" y="386">+ contact force</text>
+      <text x="350" y="365">Delayed feedback</text>
+      <text x="350" y="386">+ energy balance</text>
+    </g>
+    <rect x="40" y="425" width="1120" height="110" rx="12" fill="#132239"/>
+    <text x="65" y="459" font-size="17">Public reproduction: MATLAB / Simulink models, symbolic dynamics and offline C++ utility tests.</text>
+    <text x="65" y="489" font-size="17" fill="#94a3b8">Historical device code and third-party sources are omitted. Hardware videos are linked from the portfolio.</text>
+    <text x="65" y="516" font-size="17" fill="#94a3b8">Simulation results and software checks are not proof of hardware safety or stability under arbitrary delays.</text>
+  </g>
+</svg>
