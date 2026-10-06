@@ -95,7 +95,7 @@ $$s=\dot e+\Lambda e,$$
 and a corrective term opposing departure from it. A typical smoothed
 switching term is
 
-$$\tau_{\mathrm{sw}}=-K_s\,\operatorname{sat}(s/\phi).$$
+$$\tau_{\mathrm{sw}}=-K_s\,\mathrm{sat}(s/\phi).$$
 
 The boundary layer $\phi$ trades sharp error correction against chattering.
 This was an alternative control approach explored alongside model-based
