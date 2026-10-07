@@ -14,6 +14,24 @@ feedback when communication delay changes the energy of the coupled system.
 
 [Watch the hardware experiment](https://lucaobwegs.com/phantom-robot-bilateral-teleoperation-control/)
 
+## Where to find the controller logic
+
+The diagram above separates local robot control from the delayed communication
+channel's passivity observer and controller. For the implemented simulation
+logic, start with
+[`simulation/models/FourCh_TDPA_TD.slx`](simulation/models/FourCh_TDPA_TD.slx):
+follow the motion/force channels and their time-domain passivity elements.
+The alternative couplings are in
+[`PP_TDPA_TD.slx`](simulation/models/PP_TDPA_TD.slx) and
+[`PFmsr_TDPA_TD.slx`](simulation/models/PFmsr_TDPA_TD.slx).
+
+For my hardware controller design, see
+[`docs/hardware.md`](docs/hardware.md), which explains the parallel
+force/position, adaptive inverse-dynamics and impedance equations.
+The published implementation is MATLAB/Simulink; the hardware controller is
+documented mathematically, and this repository does not contain a C++ device
+controller.
+
 ## MATLAB / Simulink simulation
 
 ![Animated four-channel simulation](docs/simulation-animation.gif)
